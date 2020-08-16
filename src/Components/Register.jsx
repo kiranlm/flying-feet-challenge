@@ -1,7 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../App';
+import * as firebase from 'firebase';
+import { withRouter } from 'react-router-dom';
 
-const Register = () => {
+const Register = ({ history }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setErrors] = useState('');
@@ -9,8 +11,42 @@ const Register = () => {
   const Auth = useContext(AuthContext);
   const handleForm = (e) => {
     e.preventDefault();
-    console.log(Auth);
-    Auth.setLoggedIn(true);
+
+    firebase
+      .auth()
+      .setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        firebase
+          .auth()
+          .createUserWithEmailAndPassword(email, password)
+          .then((res) => {
+            console.log(res);
+            history.push('/reports');
+            if (res.user) Auth.setLoggedIn(true);
+          })
+          .catch((e) => {
+            setErrors(e.message);
+          });
+      });
+  };
+
+  const handleGoogleLogin = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    firebase
+      .auth()
+      .setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        firebase
+          .auth()
+          .signInWithPopup(provider)
+          .then((result) => {
+            console.log(result);
+            history.push('/reports');
+            Auth.setLoggedIn(true);
+          })
+          .catch((e) => setErrors(e.message));
+      });
   };
 
   return (
@@ -48,4 +84,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default withRouter(Register);

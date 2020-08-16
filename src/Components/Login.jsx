@@ -1,12 +1,14 @@
 import React, { useState, useContext } from 'react';
-import { AuthContext } from '../App';
 import {
   TextField,
   MaskedTextField,
 } from 'office-ui-fabric-react/lib/TextField';
 import { PrimaryButton } from 'office-ui-fabric-react';
+import { AuthContext } from '../App';
+import * as firebase from 'firebase';
+import { withRouter } from 'react-router-dom';
 
-const Login = () => {
+const Login = ({ history }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setErrors] = useState('');
@@ -14,8 +16,39 @@ const Login = () => {
   const Auth = useContext(AuthContext);
   const handleForm = (e) => {
     e.preventDefault();
-    console.log(Auth);
-    Auth.setLoggedIn(true);
+    firebase
+      .auth()
+      .setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        firebase
+          .auth()
+          .signInWithEmailAndPassword(email, password)
+          .then((res) => {
+            if (res.user) Auth.setLoggedIn(true);
+            history.push('/reports');
+          })
+          .catch((e) => {
+            setErrors(e.message);
+          });
+      });
+  };
+
+  const signInWithGoogle = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase
+      .auth()
+      .setPersistence(firebase.auth.Auth.Persistence.SESSION)
+      .then(() => {
+        firebase
+          .auth()
+          .signInWithPopup(provider)
+          .then((result) => {
+            console.log(result);
+            history.push('/reports');
+            Auth.setLoggedIn(true);
+          })
+          .catch((e) => setErrors(e.message));
+      });
   };
 
   return (
@@ -62,4 +95,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default withRouter(Login);

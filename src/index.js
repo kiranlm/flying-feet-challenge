@@ -3,7 +3,15 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import { createTheme, Customizations, Fabric } from '@fluentui/react';
+import {
+  createTheme,
+  Customizations,
+  Fabric,
+  initializeIcons,
+} from '@fluentui/react';
+
+// Initialize icons in case this example uses them
+initializeIcons();
 
 const myTheme = createTheme({
   palette: {
